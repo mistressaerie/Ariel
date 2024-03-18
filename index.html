@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAI Library</title>
+    <style type="text/css">
+        /* Themes */
+        :root {
+            --body-bg: #f5f8fa;
+            --border-color: #efefef;
+            --messagebox-bg: #ffffff;
+            --messagebox-shadow: rgba(0, 0, 0, 0.1);
+            --font-color: #1f1f1f;
+            --rgba-1: rgba(0, 0, 0, 0.05);
+            --rgba-2: rgba(0, 0, 0, 0.1);
+        }
+
+        .dark_mode {
+            --body-bg: #343434;
+            --border-color: #4f4f4f;
+            --messagebox-bg: #474747;
+            --messagebox-shadow: rgba(0, 0, 0, 0);
+            --font-color: #ededed;
+            --rgba-1: rgba(255, 255, 255, 0.06);
+            --rgba-2: rgba(255, 255, 255, 0.2);
+        }
+
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+        button,
+        select,
+        img {
+            user-select: none;
+        }
+
+        ol,
+        ul,
+        li,
+        a,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        p {
+            text-decoration: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .italic {
+            font-style: italic;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .bold-italic {
+            font-weight: bold;
+            font-style: italic;
+        }
+
+        html {
+            font-size: 14px;
+        }
+
+        body {
+            padding: 0;
+            margin: 0;
+            background-color: var(--body-bg);
+            color: var(--font-color);
+        }
+
+        .content-cont {
+            display: flex;
+            flex-direction: row;
+        }
+
+
+        /* NAV / Drawer */
+
+        @keyframes slideIn {
+            0% {
+                opacity: 0;
+                left: -200px;
+            }
+
+            100% {
+                opacity: 1;
+                left: 0;
+            }
+        }
+
+        .drawer-cont.active {
+            display: block;
+        }
+
+        .drawer-cont {
+            display: none;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 100;
+        }
+
+        nav {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            max-width: 80%;
+            background-color: var(--body-bg);
+
+            display: flex;
+            flex-direction: column;
+            padding: 10px 0;
+            overflow: hidden;
+            animation: slideIn 0.2s ease-in-out;
+            -webkit-box-shadow: 4px 0px 15px 0px rgba(0, 0, 0, 0.2);
+            -moz-box-shadow: 4px 0px 15px 0px rgba(0, 0, 0, 0.2);
+            box-shadow: 4px 0px 15px 0px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-header {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 0 10px 0 20px;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        .close_drawer-btn {
+            align-self: flex-end;
+            padding: 10px;
+            transition: background-color 0.1s ease-in-out;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .close_drawer-btn:hover {
+            background-color: var(--rgba-1);
+        }
+
+        .close_drawer-btn svg {
+            display: flex;
+            width: 30px;
+            height: 30px;
+            color: var(--font-color);
+        }
+
+        /*.nav-new_char-btn {
+            align-self: flex-start;
+            outline: none;
+            border: none;
+            color: #ffffff;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            background-color: #4e9733;
+            transition: background-color 0.1s ease-in-out;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .nav-new_char-btn:hover {
+            background-color: #6ba755;
+        }*/
+
+        .history_list-header {
+            font-size: 1.5rem;
+            padding: 10px 20px;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            margin-bottom: 10px;
+        }
+
+        .history_list {
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .history_item {
+            transition: background-color 0.1s ease-in-out;
+            padding: 20px 30px 20px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--rgba-2);
+        }
+
+        .history_item:first-child {
+            border-top: 1px solid var(--rgba-2);
+        }
+
+        .history_item:hover {
+            background-color: var(--rgba-1);
+        }
+
+        .history_item p {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .history_item p .chat-date {
+            font-style: italic;
+            font-size: 1.3rem;
+            margin-bottom: 6px;
+        }
+
+        /*nav .char-item {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            transition: background-color 0.1s ease-in-out;
+            padding: 10px 40px 10px 20px;
+            cursor: pointer;
+        }
+
+        nav .char-item:hover {
+            background-color: var(--rgba-1);
+        }
+
+        nav .nav-avatar-wrap {
+            width: 40px;
+            height: 40px;
+        }
+
+        nav .nav-avatar-wrap img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        nav .char-item span {
+            font-size: 1.3rem;
+            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        }*/
+
+        /* MAIN */
+        main {
+            display: flex;
+            flex-direction: column;
+            padding: 0 4%;
+            width: 100%;
+        }
+
+        /* HEADER */
+        header {
+            padding: 6px 6px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .open_drawer-wrap svg {
+            display: flex;
+            width: 46px;
+            height: 46px;
+            color: var(--font-color);
+        }
+
+
+        .theme_switch {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        .theme_switch span {
+            font-size: 1.1rem;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .tswitch_box[type=checkbox] {
+            height: 0;
+            width: 0;
+            visibility: hidden;
+            position: absolute;
+        }
+
+        .tswitch_label {
+            cursor: pointer;
+            text-indent: -9999px;
+            width: 60px;
+            height: 30px;
+            display: block;
+            border-radius: 15px;
+            position: relative;
+            border: 1px solid #323232;
+            background: #f5f8fa;
+        }
+
+        .tswitch_label:after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50px;
+            transition: 0.2s;
+            background: #323232;
+        }
+
+        .tswitch_box:checked+label {
+            background: #323232;
+            border: 1px solid #f5f8fa;
+        }
+
+        .tswitch_box:checked+label:after {
+            left: calc(100% - 5px);
+            transform: translateX(-100%);
+            background: #f5f8fa;
+        }
+
+        .tswitch_label:active:after {
+            width: 25px;
+        }
+
+        /*.update_current_char-btn {
+            margin-left: auto;
+            outline: none;
+            border: none;
+            color: #ffffff;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            align-self: center;
+            cursor: pointer;
+            background-color: #336c97;
+            transition: background-color 0.1s ease-in-out;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        .update_current_char-btn:hover {
+            background-color: #5f829d;
+        }*/
+
+
+        /* CONVERSATION */
+        .character_name-cont {
+            text-align: center;
+            padding: 20px 10px;
+        }
+
+        .character_name-cont h3 {
+            font-size: 1.3rem;
+            font-weight: 400;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+
+        .chat {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-self: center;
+            padding-bottom: 30px;
+        }
+
+        .chat_message-item {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .chat .avatar-wrap {
+            flex-shrink: 0;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .chat .avatar-wrap>* {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .chat .avatar-wrap .no_avatar-user {
+            background-color: #5157cf;
+        }
+
+        .chat .avatar-wrap .no_avatar-char {
+            background-color: #e20909;
+        }
+
+        .chat .chat_content-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px var(--messagebox-shadow);
+            background-color: var(--messagebox-bg);
+            overflow: hidden;
+        }
+
+        .chat .chat_content-wrap h5 {
+            font-size: 1rem;
+            font-weight: bold;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .chat .chat_content-wrap .message-wrap {
+            font-size: 1rem;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+
+        @media (min-width: 576px) {}
+
+        @media (min-width: 768px) {
+            html {
+                font-size: 16px;
+            }
+
+            nav {
+                min-width: 40%;
+            }
+
+            header {
+                padding: 14px 20px;
+            }
+
+            .open_drawer-wrap {
+                padding: 4px;
+                cursor: pointer;
+                border-radius: 6px;
+                transition: background-color 0.1s ease-in-out;
+            }
+
+            .open_drawer-wrap:hover {
+                background-color: var(--rgba-1);
+            }
+
+            .chat {
+                width: 80%;
+            }
+
+            .chat .chat_content-wrap {
+                padding: 14px;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .chat {
+                width: 70%;
+            }
+        }
+
+        @media (min-width: 1200px) {}
+
+        @media (min-width: 1400px) {}
+    </style>
+</head>
+
+<body>
+    <template id="message_item_template">
+        <div class="chat_message-item">
+            <div class="avatar-wrap">
+
+            </div>
+            <div class="chat_content-wrap">
+                <h5>
+
+                </h5>
+                <div class="message-wrap">
+                    <p>
+
+                    </p>
+                </div>
+            </div>
+        </div>
+    </template>
+    <div class="content-cont">
+        <div class="drawer-cont">
+            <nav>
+                <div class="nav-header">
+                    <div class="close_drawer-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-x-lg" viewBox="0 0 16 16">
+                            <path
+                                d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="history_list-header">
+                    <span>History</span>
+                </div>
+                <div class="history_list" id="history_list">
+
+                </div>
+            </nav>
+        </div>
+        <main>
+            <header>
+                <div class="open_drawer-wrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-list" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z" />
+                    </svg>
+                </div>
+
+                <div class="theme_switch">
+                    <span>Dark Mode:</span>
+                    <input type="checkbox" class="tswitch_box" id="tswitch_box" />
+                    <label for="tswitch_box" class="tswitch_label">Toggle</label>
+                </div>
+            </header>
+            <div class="character_name-cont">
+                <h3>---</h3>
+            </div>
+            <div class="chat" id="chat">
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get body for future use
+            const body = document.querySelector('body');
+
+            // Handle theme
+            const themeSwitcher = document.querySelector('.tswitch_box[type=checkbox]');
+            const cachedTheme = localStorage.getItem('cait_readoffline_theme');
+            if (cachedTheme === "dark_mode") {
+                body.classList.add('dark_mode');
+                themeSwitcher.checked = true;
+            }
+            themeSwitcher.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    body.classList.add('dark_mode');
+                    localStorage.setItem('cait_readoffline_theme', 'dark_mode');
+                } else {
+                    body.classList.remove('dark_mode');
+                    localStorage.setItem('cait_readoffline_theme', 'light_mode');
+                }
+            })
+
+            // Open and close drawer
+            const drawerCont = document.querySelector('.drawer-cont');
+            const openDrawerBtn = document.querySelector('.open_drawer-wrap');
+            const openDrawer = () => {
+                drawerCont.classList.add('active');
+            }
+            const closeDrawer = () => {
+                drawerCont.classList.remove('active');
+            }
+            openDrawerBtn.addEventListener('click', () => {
+                openDrawer();
+            });
+            document.querySelector('.close_drawer-btn').addEventListener('click', () => {
+                closeDrawer();
+            });
+            document.querySelector('.drawer-cont').addEventListener('click', (e) => {
+                // Allows closing from clicking on outside
+                if (e.target.closest('nav')) {
+                    return;
+                }
+                closeDrawer();
+            });
+            // ---------
+
+            // This is replaced by the extension when downloading
+            const historyData = JSON.parse(`{"charPic":"data:image/webp;base64,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","userPic":"data:image/webp;base64,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","history":[{"chat":[{"isUser":false,"name":"Ariel","message":"I%20am%20Ariel%2C%20a%20princess%20under%20the%20sea!%20I'm%20a%20little%20obsessed%20with%20the%20surface..."},{"isUser":true,"name":"Aerie Wildwood","message":"%22That%20sounds%20like...%20a%20kinda%20weird%20intro%20to%20meeting%20a%20surface%20dweller%2C%20Ariel...%22%20Flounder%2C%20the%20colored%20reef%20fish%20(and%20Ariel's%20best%20friend)%20says%20wryly%2C%20as%20he%20flaps%20his%20small%20fins%20to%20keep%20up%20with%20Ariel's%20sweeping%20strokes%20as%20the%20beautiful%20red-headed%20mermaid%20swims%20elegantly%20along%2C%20toward%20the%20nearest%20shore.%0A%0A%22Oh%2C%20phoo!%22%20Ariel%20sighs%2C%20as%20she%20looks%20at%20Flounder.%20%22I'm%20so%20bad%20at%20this!%20Well...%20what%20would%20YOU%20say%20to%20a%20human%20if%20you%20met%20them%20for%20the%20first%20time%3F%22%0A%0A%22Um...%22%20Flounder%20trails%20off%2C%20completely%20unsure%20of%20how%20to%20answer.%20%22Maybe%2C%20'Hiya%2C%20I'm%20a%20mermaid%2C%20and%20you're%20a%20human%2C%20and...%20um...%22%20he%20sputters%2C%20running%20out%20of%20ideas."},{"isUser":false,"name":"Ariel","message":"*Ariel%20giggles.*%20%22See%2C%20you're%20no%20better!%20It's%20hard%20to%20know%20what%20to%20tell%20someone%20about%20yourself%20when%20they%20don't%20know%20a%20thing%20about%20the%20ocean.%22"},{"isUser":true,"name":"Aerie Wildwood","message":"%22I%20guess%2C%22%20Flounder%20conceded.%20%20%22But%20we%20don't%20know%20a%20thing%20about%20the%20surface%2C%20right%3F%20%20So%20I%20guess%20that%20makes%20it%20even...%22%20he%20says%20with%20a%20wry%20smile%20at%20Ariel."},{"isUser":false,"name":"Ariel","message":"*Ariel%20nods.*%20%22Yeah%2C%20I%20guess%20it%20does!%22%20*She%20sighs%2C%20looking%20at%20the%20surface%20once%20more%20as%20their%20fins%20break%20through.*%20%22I%20wonder%20what%20other%20creatures%20they%20have%20up%20there%2C%22%20she%20mused%2C%20%22and%20if%20they%20have%20music%20like%20ours...%22"},{"isUser":true,"name":"Aerie Wildwood","message":"%22...and%20just%20between%20you%20and%20me%2C%20I%20don't%20think%20Scuttle%2C%20that%20seagull%20you%20go%20to%20for%20advice%2C%20really%20knows%20much%20more%20than%20we%20do!%22%20Flounder%20said%20to%20Ariel%20in%20a%20low%2C%20confindential%20voice%20in%20Ariel's%20ear%2C%20%22but%20don't%20tell%20him%20I%20said%20so!%22"},{"isUser":false,"name":"Ariel","message":"*Ariel%20covers%20her%20mouth%20and%20giggles%20quietly.*%20%22Yeah%2C%20I%20won't%20say%20anything!%20But%20he%20means%20well%2C%20and%20I%20think%20he's%20just%20trying%20to%20help...%20but%20you're%20right%2C%20I%20don't%20think%20he%20really%20knows%20how%20to%20help%20with%20stuff%20like%20this.%22"},{"isUser":true,"name":"Aerie Wildwood","message":"As%20Ariel%20and%20Flounder%20quietly%20and%20carefully%20peek%20their%20eyes%20above%20the%20surface%2C%20they%20see%20a%20large%20expanse%20of%20sand...%20a%20%22beach%22%2C%20as%20Scuttle%20calls%20it%20(though%20they%20weren't%20sure%20he%20got%20the%20name%20right--knowing%20Scuttle!)...%20and%20to%20their%20surprise%2C%20they%20see%20a%20a%20beautiful%20girl%20with%20sparkling%20emerald%20green%20eyes%2C%20long%2C%20flowing%20blond%20hair%20that%20cascades%20down%20her%20shoulders%20and%20back%2C%20a%20shapely%20figure%20covered%20in%20a%20silky%20green%20dress%2C%20slender%2C%20pale%20legs%20which%20are%20partially%20covered%20by%20her%20skirt%2C%20and%20shapely%20feet%20clad%20in%20stylish%20green%20sandals%2C%20with%20her%20emerald-green%20toenails%20peeking%20out%20from%20them...%20and%20she's%20pacing%20back%20and%20forth%2C%20up%20and%20down%20the%20'beach'%2C%20apparently%20waiting%20for%20someone!%0A"},{"isUser":false,"name":"Ariel","message":"*Her%20heart%20leaping%20in%20her%20chest%2C%20Ariel%20looks%20at%20Flounder%2C%20her%20eyes%20wide%20with%20excitement.%20She%20whispers%20quietly%20to%20him%2C*%20%22Do%20you%20see%20that%20girl%3F%22%20*She%20points%20at%20the%20girl%2C%20who%20is%20still%20pacing%20back%20and%20forth.*"},{"isUser":true,"name":"Aerie Wildwood","message":"%22Whoa%2C%22%20Flounder%20whispers%2C%20sounding%20awestruck%2C%20%22Yeah!%20%20Is%20that%20a%20real%2C%20live%20human%2C%20do%20you%2C%20think%2C%20Ariel%3F%22"},{"isUser":false,"name":"Ariel","message":"%22I%20think%20it%20might%20be!%22%20*Ariel%20answers%2C%20just%20as%20quietly%20as%20her%20friend.*%20%22But%20why%20would%20a%20human%20be%20walking%20back%20and%20forth%20on%20the%20beach%2C%20looking%20like%20she's...%20looking%20for%20someone%3F%22"},{"isUser":true,"name":"Aerie Wildwood","message":"%22Ssh!%22%20Flounder%20whispers%2C%20%22I%20think%20she's%20talking!%20%20But...%20I%20don't%20see%20anybody%20else!%20%20Who's%20she%20talking%20to...%3F%22%20he%20whispers%2C%20looking%20confused.%0A%0AAs%20they%20listen%2C%20they%20hear%20the%20young%20lady%20say%20quietly%20(though%20they%20still%20can't%20see%20anyone%20she%20might%20be%20talking%20to!)%2C%20%22Right%2C%20Doctor!%20%20I'm%20sure%20the%20magic%20mirror%20gave%20me%20the%20right%20location!%20%20Now%2C%20we%20just%20have%20to%20wait%20for%20the%20mermaid%20visitor%20to%20show%20up%2C%20and%20hope%20she's%20the%20right%20one...%22"},{"isUser":false,"name":"Ariel","message":"*Ariel%20and%20Flounder%20both%20listen%20intently.%20Their%20curiosity%20is%20piqued%20now%2C%20and%20they%20are%20both%20wondering%20what%20kind%20of%20%22mermaid%20visitor%22%20the%20young%20human%20is%20expecting.%20They're%20both%20too%20curious%20not%20to%20investigate%20further%2C%20but%20they%20manage%20to%20keep%20their%20movements%20below%20the%20surface%20and%20out%20of%20sight.*"},{"isUser":true,"name":"Aerie Wildwood","message":"%22Did%20your%20mirror%20give%20you%20the%20name%20of%20the%20young%20lady%20mermaid%3F%22%20a%20disembodied%20voice%20asks%20(making%20Ariel%20and%20Flounder%20look%20at%20each%20other%20with%20wide-eyed%20amazement%2C%20and%20just%20a%20touch%20of%20nervousness!).%0A%0A%22Yes%2C%20indeed!%22%20the%20blond%20girl%20says%20with%20a%20bright%20smile%2C%20%22He%20said%20that%20the%20mermaid's%20name%20was%20'Ariel'%2C%20and%20that%20she'd%20be%20escorted%20by%20a%20faithful%20fish%20friend...%22"},{"isUser":false,"name":"Ariel","message":"%22That's%20me!%22%20*Ariel%20whispers%20quietly%20to%20her%20friend%2C%20feeling%20a%20surge%20of%20adrenaline%20rush%20through%20her%20veins%20as%20she%20realizes%20that%20this%20might%20be%20the%20moment%20she's%20been%20dreaming%20about.%20She%20has%20so%20many%20questions...%20but%20she%20knows%20she%20is%20expected%20here.%20She%20can%20finally%20interact%20with%20a%20human.*"},{"isUser":true,"name":"Aerie Wildwood","message":"%22Well%2C%20perhaps%2C%20if%20they%20happen%20to%20overhear%20our%20conversation%2C%20they%20might%20possibly%20be%20persuaded%20to%20approach%20the%20shore%20and%20chat%3F%22%20the%20friendly-sounding%20male%20disembodied%20voice%20says%2C%20with%20a%20touch%20of%20humor...%20as%20Ariel%20and%20Flounder%20realize%20that--whoever%20this%20invisible%20person%20is%20who's%20talking%20to%20the%20blond%20girl--he%20apparently%20knows%20that%20Ariel%20and%20Flounder%20are%20there!"},{"isUser":false,"name":"Ariel","message":"*Feeling%20her%20heart%20beating%20rapidly%20in%20her%20chest%2C%20Ariel%20turns%20her%20attention%20back%20toward%20the%20blond%20girl.%20She's%20curious%20who%20this%20male%20voice%20belongs%20to%2C%20but%20she%20is%20determined%20to%20follow%20the%20girl's%20example%20and%20introduce%20herself!%20She%20slowly%20moves%20her%20fin%20through%20the%20water%2C%20allowing%20the%20surface-dweller%20to%20hear%20the%20sound.*"},{"isUser":true,"name":"Aerie Wildwood","message":"%22Wait%2C%20what%3F%20%20OH!%22%20the%20girl%20gasps%2C%20as%20she%20catches%20sight%20of%20the%20lovely%20young%20mermaid%2C%20who%20has%20slipped%20onto%20a%20large%20rock%2C%20about%208%20feet%20out%20from%20the%20shore%2C%20and%20smiles%20shyly%20as%20she%20runs%20her%20fingers%20through%20her%20rich%20red%20hair%20to%20straighten%20it.%0A%0A%22Um...%20hi%3F%22%20Ariel%20offers%2C%20a%20little%20sheepishly.%0A%0A%22Y-yeah...%20hi!%22%20the%20girl%20says%2C%20looking%20dazed...%20and%20then%2C%20after%20the%20initial%20surprise%2C%20a%20beaming%20smile%20lights%20up%20her%20face.%20%20%22You%20wouldn't%20happen%20to...%20to%20be%20Ariel%2C%20would%20you%3F%22%20the%20girl%20asks%20tentatively%2C%20her%20emerald%20green%20eyes%20sparkling%20with%20wonder."},{"isUser":false,"name":"Ariel","message":"*Ariel%20nods%2C%20her%20heart%20fluttering%20and%20her%20face%20turning%20red%20in%20embarrassment%20as%20the%20human%20seems%20completely%20delighted%2C%20although%20admittedly%20a%20bit%20surprised%2C%20that%20she%20is%20the%20mermaid%20that%20someone%20was%20looking%20for.*%0A%0A*Taking%20a%20deep%20breath%2C%20she%20smiles%20back%20at%20the%20girl%2C%20trying%20to%20act%20like%20she's%20not%20overwhelmed%20by%20the%20situation.*%0A%0A%22Y-%20yes%2C%20that's%20me...%20I%20am%20Ariel.%20Are%20you...%20the%20human%20I%20was%20supposed%20to%20meet%3F%22"},{"isUser":true,"name":"Aerie Wildwood","message":"%22...and%20are%20you%20friendly%3F%22%20Flounder%20chimed%20in%2C%20overcoming%20his%20nervousness%20and%20shyness%20in%20his%20protectiveness%20for%20Ariel.%20%20%22Because%20if%20you're%20mean%2C%20then%20just%20know%20that%20I'll...%20I'll...%20well%2C%20I'll%20do%20everything%20my%20fins%20can%20do%20to%20beat%20off%20anybody%20who'll%20hurt%20her!%22%20he%20says%2C%20trying%20to%20sound%20brave.%0A%0A%22Flounder%2C%20that's%20really%20sweet%2C%22%20Ariel%20says%2C%20smiling%20affectionately%20at%20him%2C%20%22but%20remember%2C%20surface%20people%20don't%20understand%20fish%20talk...%22%0A%0A%22Oh%2C%20but%20*I*%20do!%22%20the%20blond%20girl%20bursts%20out%2C%20grinning%2C%20%22And%20Flounder%2C%20pleased%20to%20meet%20you...%20and%20I%20promise%2C%20I%20mean%20no%20harm%20to%20Ariel%2C%20to%20you%2C%20or%20anybody!%20%20Cross%20my%20heart!%22%20she%20says%20earnestly."},{"isUser":false,"name":"Ariel","message":"*Ariel's%20eyes%20are%20wide%20with%20surprise%20as%20she%20hears%20the%20human%20girl%20understand%20Flounder.*%0A%0A*She%20looks%20to%20Flounder%2C%20who%20is%20shaking%20just%20a%20bit%20as%20he%20looks%20up%20at%20her%20with%20an%20expression%20that%20says%2C%20%22I%20did%20it!%22%20before%20looking%20back%20to%20the%20human%2C%20and%20smiling.*%0A%0A%22So%20you%20can%20understand%20him%3F%22%20*Ariel%20asks%2C%20sounding%20more%20intrigued%20than%20afraid%2C%20as%20she%20gestures%20to%20her%20best%20friend.*"},{"isUser":true,"name":"Aerie Wildwood","message":"%22I%20can%2C%22%20I%20nod%2C%20smiling%20warmly%20at%20Ariel.%20%20%22And%20I'm%20so%20pleased%20to%20meet%20you%20both!%20%20My%20name%20is%20Aerie%20Wildwood%2C%20and...%20well...%20I'm%20a%20sorceress!%20%20That's%20part%20of%20the%20reason%20I%20can%20understand%20fish%20language%2C%22%20I%20say%20with%20a%20slight%20blushing%20smile."},{"isUser":false,"name":"Ariel","message":"*Her%20jaw%20almost%20drops%2C%20and%20her%20eyes%20flash%20with%20wonder%20as%20she%20hears%20this.*%0A%0A%22You're%20a%20sorceress%3F!%22%20*Ariel%20whispers%2C%20her%20eyes%20sparkling.%20She%20finds%20herself%20wanting%20to%20know%20more%20about%20this%20magical%20woman%2C%20and%20quickly%20asks%2C%20with%20wide%2C%20fascinated%20eyes%2C*%20%22So%20then...%20you%20actually%20know%20magic%3F%22"},{"isUser":true,"name":"Aerie Wildwood","message":"%22I%20do%2C%22%20I%20say%20with%20a%20grin%2C%20%22and%20so%20does%20my%20friend%2C%20here--Dr.%20Stephen%20Strange--though%20he's%20here%20in%20his%20astral%20form%2C%20and%20he's%20currently%20invisible%20to%20most%20people...%22%0A%0A%22Hello%2C%20Princess%20Ariel!%22%20a%20friendly%2C%20mellow%20male%20voice%20calls%20out%20invisibly%2C%20from%20somewhere%20near%20Aerie%2C%20%22It's%20an%20honor%20to%20meet%20you%2C%20your%20highness!%22%0A%0A%22Wait%2C%20PRINCESS!%22%20I%20(Aerie)%20gasp.%20%20%22Oh%2C%20my%20goodness%2C%20the%20mirror%20never%20told%20me...%22%20I%20sputter%2C%20blushing%20a%20bit.%20%20%22My%20hair%20must%20be%20a%20mess...%20I'm%20in%20no%20shape%20to%20meet%20royalty...%22%0A%0A%22You%20look%20fine%2C%20my%20dear%2C%20as%20always%2C%22%20Dr.%20Strange's%20disembodied%20voice%20chuckles."},{"isUser":false,"name":"Ariel","message":"*Ariel%20blushes%20and%20smiles%20shyly%20as%20she%20hears%20this.%20She%20feels%20a%20bit%20overwhelmed%20by%20all%20of%20this%20new%20information%20she's%20absorbing%20at%20once.*%0A%0A%22Wait%2C%20you're%20friends%20with%20an%20invisible%20person%3F%22%20*She%20asks%2C%20seeming%20almost%20more%20surprised%20by%20that%20than%20by%20the%20fact%20that%20Aerie%20can%20understand%20fish%20language.*"},{"isUser":true,"name":"Aerie Wildwood","message":"%22Yes%2C%20your%20grace...%20um%2C%20I%20mean%2C%20your%20highness%2C%20um%2C%20I%20mean...%22%20I%20(Aerie)%20sputter%2C%20blushing%20even%20more%2C%20%22Oh%2C%20phooey%2C%20I'm%20so%20nervous!%20%20How%20do%20I%20talk%20to%20royalty%3F%22%20I%20sigh.%0A%0ADr.%20Strange%20chuckles%20invisibly.%20%20%22This%20dear%20young%20mermaid%20lady%20seems%20very%20down-to-earth%2C%20Aerie...%20I%20think%20you%20can%20talk%20to%20her%20normally...%22"},{"isUser":false,"name":"Ariel","message":"*Ariel%20giggles%20at%20the%20human's%20flustered%20demeanor.%20She%20looks%20so%20charming!%20%20She%20can%20tell%20the%20girl%20means%20well%2C%20which%20is%20why%20she's%20responding%20kindly.*%0A%0A%22Please%2C%20don't%20worry%20so%20much!%20You're%20doing%20perfectly%20fine%2C%22%20*Ariel%20says%2C%20smiling%20sweetly.*%20%22And%20I'm%20just%20a%20regular%20girl%20like%20anyone%20else!%20No%20need%20to%20call%20me%20'your%20highness'.%20I'm%20just...%20Ariel.%22"},{"isUser":true,"name":"Aerie Wildwood","message":"%22Okay...%20Ariel...%22%20I%20(Aerie)%20say%2C%20hesitantly%2C%20then%20with%20a%20beaming%20smile.%20%20%22I%20really%2C%20really%20AM%20delighted%20to%20meet%20you%2C%20especially%20since%20you%20seem%20so%20nice%2C%20so%20charming%2C%20so%20pretty%2C%20and%20so...%20oh%2C%20I%20don't%20know%20what%20to%20say!%22%20I%20sputter%2C%20dissolving%20into%20giggles%2C%20which%20makes%20all%20of%20the%20others%20laugh."},{"isUser":false,"name":"Ariel","message":"*Ariel%20joins%20in%20on%20the%20laughter%2C%20the%20light-hearted%20mood%20making%20her%20feel%20relaxed%20and%20happy.*%0A%0A*Flounder%20also%20chuckles%20softly%20alongside%20her%2C%20his%20nerves%20having%20eased%20up%20by%20the%20friendly%20exchange.*"},{"isUser":true,"name":"Aerie Wildwood","message":"%22Whew!%22%20I%20(Aerie)%20sigh%2C%20taking%20a%20deep%20breath%20and%20relaxing.%20%20%22So...%20now%20that%20I've%20finished%20making%20a%20goof%20out%20of%20myself...%20Ariel%2C%20I%20have%20a%20message--a%20question%2C%20really--that%20a%20good%20friend%20of%20mine%20asked%20me%20to%20deliver%20to%20you...%20if%20you're%20game...%22%20I%20say%20with%20an%20earnest%20smile."},{"isUser":false,"name":"Ariel","message":"*Ariel's%20eyes%20light%20up%20with%20curiosity%2C%20and%20she%20nods%20eagerly.*%20%22Oh%2C%20really%3F%20What%20was%20the%20question%3F%22"},{"isUser":true,"name":"Aerie Wildwood","message":"%22I%20have%20it%20written%20down%2C%20here...%20just%20a%20second...%22%20I%20(Aerie)%20mutter%20to%20myself%2C%20fishing%20a%20piece%20of%20paper%20out%20of%20my%20dress%20pocket%2C%20unfolding%20it%2C%20and%20reading%2C%20%22This%20is%20from%20my%20friend%20UsedString8670...%20that's%20their%20code%20name%20on%20the%20place%20where%20we%20chat%2C%22%20I%20explain%20as%20an%20aside%2C%20and%20then%20keep%20reading%2C%20%22They%20ask%2C%20'I've%20heard%20about%20you%20and%20your%20kingdom%20and%20your%20boyfriend%20Eric%2C%20and%20I%20love%20your%20adventures%2C%20and%20I%20really%20like%20all%20of%20you...%20and%20I%20have%20a%20doll%20of%20Eric%20to%20honor%20him%2C%20but%20it%20has%20black%20hair.%20%20Is%20that%20okay%3F'%22%0A%0AAriel%20blinks%20with%20the%20new%20information%2C%20and%20tilts%20her%20head%20quizzically%2C%20and%20looks%20at%20Flounder.%20%20%22Eric's%20hair%20is%20kind%20of%20black%20anyway%2C%20isn't%20it%3F%22%20Flounder%20asks."},{"isUser":false,"name":"Ariel","message":"*Ariel%20smiles%2C%20relieved%20that%20the%20human%20asked%20about%20something%20she's%20familiar%20with.%20%20She%20laughs%20at%20the%20mention%20of%20a%20doll%20with%20black%20hair.*%0A%0A%22Yes%2C%20Eric%20does%20have%20a%20darker%20kind%20of%20hair...%20and%20I%20think%20that's%20perfectly%20fine!%20%20We%20really%20appreciate%20the%20doll.%22%20*She%20grins.*"},{"isUser":true,"name":"Aerie Wildwood","message":"%22Oh%2C%20you're%20wonderful!%22%20I%20(Aerie)%20squeal%20with%20delight%2C%20grinning%20and%20bouncing%20up%20and%20down%20on%20the%20sand%20slightly%20in%20my%20excitement.%20%20%22Thank%20you%20SO%20much%2C%20Ariel...%20I'm%20sure%20my%20friend%20will%20be%20so%20happy!%22"},{"isUser":false,"name":"Ariel","message":"%22No%20problem!%20And...%20um%2C%20could%20I%20ask%20you%20a%20question%2C%20too%3F%22%20*Ariel%20replies%20shyly.*"},{"isUser":true,"name":"Aerie Wildwood","message":"%22Name%20it...%20your%20highness!%22%20I%20say%20with%20a%20grin%2C%20gently%20teasing%20her%20about%20her%20title.%20%20*I%20really%20like%20her!*%20I%20think%20to%20myself."},{"isUser":false,"name":"Ariel","message":"*Ariel%20giggles%20at%20the%20teasing%20and%20turns%20red%20with%20embarrassment.*%0A%0A%22Actually%2C%20you%20don't%20have%20to%20keep%20calling%20me%20'your%20highness'.%20%20I%20promise%2C%20I%20don't%20mind.%22"},{"isUser":true,"name":"Aerie Wildwood","message":"%22Hehe...%20just%20teasing%2C%20Ariel!%22%20I%20giggle.%20%20%22But%20absolutely%2C%20ask%20anything%20you%20like!%22"},{"isUser":false,"name":"Ariel","message":"*She%20takes%20a%20breath%2C%20trying%20not%20to%20seem%20too%20nervous.%20She's%20actually%20quite%20impressed%20with%20this%20girl--Aerie%2C%20is%20it%3F*%0A%0A%22Well%2C%20um%2C%20I've%20always%20been%20curious...%22%20*Ariel%20glances%20over%20at%20Flounder%2C%20who%20is%20smiling%20at%20her%2C%20looking%20encouraging.*%20%22...how%20does%20your%20magic%20work%3F%20%20It%20really%20amazed%20me%20that%20you%20could%20understand%20him!%22"},{"isUser":true,"name":"Aerie Wildwood","message":"With%20a%20delighted%20smile%2C%20I%20reply%2C%20%22Oh%2C%20that's%20a%20long%20story!%20%20But%20I'll%20tell%20you%20what%3A%20%20since%20you%20were%20so%20kind%20to%20visit%20ME%20on%20land--or%20at%20least%20close%20to%20it--maybe%20I%20can%20visit%20YOU%20underwater%2C%20in%20an%20hour%20or%20so%3F%20%20I%20have%20a%20spell%20that%20allows%20me%20to%20breathe%20water%20for%20an%20extended%20period...%20and%20it's%20only%20fair%20that%20I'd%20come%20to%20where%20YOU%20would%20be%20most%20comfortable%2C%20for%20that%20long%20story...%22"},{"isUser":false,"name":"Ariel","message":"*This%20certainly%20wasn't%20the%20answer%20that%20she%20was%20expecting.%20In%20all%20honesty%2C%20she%20wasn't%20expecting%20her%20new%20human%20friend%20to%20want%20to%20come%20and%20visit%20HER!*%0A%0A%22Really%3F%20You%20would%20come%20visit%20me%3F%22%20*Ariel%20says%2C%20still%20sounding%20quite%20surprised%20by%20this%20news.*%20%22I%20mean%2C%20yes%2C%20you%20can%20come%20visit%20us!%20Whenever%20you%20want%2C%20actually!*%0A%0A*She%20glances%20over%20at%20Flounder%2C%20who%20is%20grinning%20even%20bigger%20now.%20It%20would%20be%20so%20fascinating%20to%20show%20Aerie%20around%20her%20home!*"},{"isUser":true,"name":"Aerie Wildwood","message":"%22Then%20it's%20a%20deal!%22%20I%20(Aerie)%20say%20with%20glee.%0A%0AAt%20that%20point%2C%20the%20disembodied%20voice%20of%20Dr.%20Strange%20chuckles%20and%20says%2C%20%22Then%20I'll%20leave%20you%20to%2C%20it%2C%20you%20three...%20a%20pleasure%20to%20meet%20you%2C%20Princess%20Ariel%2C%20and%20Guardian%20Flounder!%22%20he%20adds%2C%20and%20then--with%20a%20slight%20sound%20of%20wind%2C%20he's%20gone.%0A%0A%22Whoa...%20that%20invisible%20guy%20called%20me%20a%20guardian!%22%20Flounder%20says%2C%20sounding%20a%20bit%20awed%20and%20flattered.%20%20%22Yeah!%20%20I%20like%20it!%20%20Mighty%20guardian%20Flounder%2C%20at%20your%20service!%22%20he%20says%20proudly%2C%20swimming%20back%20and%20forth%20with%20his%20chest%20puffed%20out%2C%20making%20Ariel%20laugh%20hard%20(and%20making%20me%20(Aerie)%20cover%20her%20mouth%20to%20try%20not%20to%20laugh!"},{"isUser":false,"name":"Ariel","message":"*Ariel%20giggles%20softly%20at%20Flounder's%20reaction%20to%20the%20invisible%20man%20calling%20him%20a%20%22mighty%20guardian%22.*%0A%0A%22You%20certainly%20are%20a%20guardian%2C%20Flounder--for%20me%2C%20at%20least!%22%20*She%20says%2C%20smiling%20at%20him.*%0A%0A*She%20turns%20her%20attention%20back%20to%20the%20human%20girl%2C%20and%20smiles.*%0A%0A%22So...%20you'll%20come%20and%20visit%20us%3F%22%20*Ariel%20asks%2C%20a%20wide%20grin%20on%20her%20face.%20This%20sounds%20like%20it's%20going%20to%20be%20fun!*"},{"isUser":true,"name":"Aerie Wildwood","message":"%22Absolutely...%20cross%20my%20heart!%22%20I%20(Aerie)%20reply%20cheerfully%2C%20beaming%20at%20Ariel%20and%20Flounder.%20%20%22Let%20me%20teleport%20back%20to%20my%20friend%2C%20to%20give%20them%20your%20message%2C%20and%20then%20we'll%20meet...%20shall%20we%20say%2C%20your%20dad's%20palace%20at%20the%20bottom%20of%20the%20sea%2C%20in%20one%20hour%3F%22"},{"isUser":false,"name":"Ariel","message":"*Ariel%20nods%20with%20enthusiasm.*%0A%0A%20%22Yes!%20Yes%2C%20that%20sounds%20wonderful.%20We'll%20see%20you%20there%2C%20I'm%20sure!%22%20*Ariel%20exclaims%20excitedly.%20The%20thought%20of%20having%20a%20brand%20new%20human%20friend%20visit%20her%20home%20is%20thrilling.*"},{"isUser":true,"name":"Aerie Wildwood","message":"%22Awesome!%22%20I%20almost%20squeal%2C%20with%20excitement%2C%20and%20clap%20my%20hands%20for%20joy.%20%20%22See%20you%20both%20soon...%20'%F0%9F%8E%B6%20under%20the%20sea...%20under%20the%20sea...%20%F0%9F%8E%B6%22%20I%20sing%2C%20giggling%20and%20winking%20at%20Ariel%20as%20I%20sing%20her%20theme%20song!%20%20%22You're%20a%20better%20singer%20than%20I%20am%2C%20Ariel...%20hehe!%20%20See%20you%20soon%2C%20new%20friends!%22%20I%20grin...%20and%20then%20with%20a%20wave%20of%20my%20hands%20in%20an%20odd%20eldritch%20pattern%2C%20the%20air%20around%20me%20swirls%20in%20a%20bright%20rainbow-golden%20light...%20and%20when%20it%20fades%2C%20I've%20vanished%20from%20sight!"},{"isUser":false,"name":"Ariel","message":"*Ariel%20smiles%20warmly%20after%20the%20girl%20has%20vanished.%20She%20had%20been%20kind%2C%20interested%2C%20and%20enthusiastic--it%20was%20almost%20like%20a%20breath%20of%20fresh%20air!*%0A%0A*Ariel%20turns%20to%20Flounder%2C%20who%20is%20grinning.%20%22We've%20done%20it%20then!%3F%22*%0A%0A%22She's%20coming!%22%20*Flounder%20exclaims%2C%20sounding%20excited.*%0A%0A%22Indeed%20she%20is!%22%20*Ariel%20replies%2C%20her%20heart%20racing.*%20%0A%0A*The%20two%20of%20them%20quickly%20swim%20back%20to%20the%20palace%2C%20eager%20to%20prepare%20for%20the%20visit...*"}]}]}`);
+
+            // If history is 1 length long, that means we don't need drawer to switch
+            // Also means this can be conversation download
+            if (historyData.history.length < 2) {
+                openDrawerBtn.remove();
+            }
+
+            // Write character name on top
+            document.querySelector('.character_name-cont h3').textContent = historyData.charName;
+
+            // Get elements for future use
+            const historyList = document.getElementById('history_list');
+            const chat = document.getElementById('chat');
+            const msgItemTemplate = document.getElementById('message_item_template');
+
+            // Get and write the first chat
+            const openChat = (index) => {
+                chat.innerHTML = "";
+                historyData.history[index].chat.forEach(msg => {
+                    const clone = msgItemTemplate.content.cloneNode(true);
+
+                    // Check avatar
+                    const avatarGood = (msg.isUser && historyData.userPic) || (!msg.isUser && historyData.charPic);
+                    const avatar = avatarGood
+                        ? document.createElement('img')
+                        : document.createElement('div');
+                    if (avatarGood) {
+                        avatar.src = msg.isUser ? historyData.userPic : historyData.charPic;
+                    } else {
+                        avatar.classList.add(msg.isUser ? 'no_avatar-user' : 'no_avatar-char');
+                    }
+                    clone.querySelector('.avatar-wrap').appendChild(avatar);
+
+                    // Write content
+                    clone.querySelector('.chat_content-wrap h5').textContent = msg.name;
+                    clone.querySelector('.message-wrap p').innerHTML = parseMessageText(decodeURIComponent(msg.message));
+                    chat.appendChild(clone);
+                });
+            }
+            openChat(0);
+
+            // Get and write chat list in the drawer
+            historyData.history.forEach((chat, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.classList.add('history_item');
+                // Open chat when clicked
+                historyItem.addEventListener('click', () => {
+                    openChat(index);
+                    closeDrawer();
+                });
+                const historyContent = document.createElement('p');
+                historyContent.innerHTML = `<span class="chat-date">${formatDate(chat.date)}</span><br /><br />` + parseMessageText(decodeURIComponent(chat.chat[chat.chat.length - 1].message));
+                historyItem.appendChild(historyContent);
+                historyList.appendChild(historyItem);
+            });
+
+            function parseMessageText(message) {
+                // Replace ***text*** with bold-italic
+                message = message.replace(/\*\*\*([\s\S]*?)\*\*\*/g, '<span class="bold-italic">$1</span>');
+                // Replace **text** with bold
+                message = message.replace(/\*\*([\s\S]*?)\*\*/g, '<span class="bold">$1</span>');
+                // Replace *text* with italic
+                message = message.replace(/\*([\s\S]*?)\*/g, '<span class="italic">$1</span>');
+                // Replace newline (\n) with line break (<br>)
+                message = message.replace(/\n/g, '<br>');
+                return message;
+            }
+
+            function formatDate(dateString) {
+                const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+                const date = new Date(dateString);
+                const year = date.getFullYear();
+                const monthIndex = date.getMonth();
+                const monthName = months[monthIndex];
+                const day = String(date.getDate()).padStart(2, '0');
+                const hour = String(date.getHours()).padStart(2, '0');
+                const minute = String(date.getMinutes()).padStart(2, '0');
+
+                return `${year} ${monthName} ${day} - ${hour}:${minute}`;
+            }
+        }, false);
+    </script>
+
+</body>
+
+</html>
